@@ -2,60 +2,29 @@ image:
   file: .gitpod.Dockerfile
 
 tasks:
-  - name: Setup For BwoB Intro To Bioinformatics (Micromamba, QIIME 2 2025.4, q2-krona, and Krona)
+  - name: Setup QIIME2 2025.4 with Miniforge/Mamba
     init: |
-      # Set up environment variables
-      export MAMBA_ROOT_PREFIX=/home/gitpod/micromamba
-      export MAMBA_EXE=/usr/local/bin/micromamba
-      
-      # Source bashrc to get micromamba initialization
+      # Source bashrc to initialize conda/mamba
       source ~/.bashrc
       
-      # Verify micromamba is working
-      echo "Testing micromamba..."
-      micromamba --version
+      # Verify mamba installation
+      echo "Testing mamba installation..."
+      mamba --version
+      conda --version
       
-      # Create QIIME2 2025.4 environment if it doesn't exist
-      if [ ! -d "$MAMBA_ROOT_PREFIX/envs/qiime2-amplicon-2025.4" ]; then
-        echo "Creating QIIME2 2025.4 amplicon environment..."
-        max_retries=3
-        retry_count=0
-        while [ $retry_count -lt $max_retries ]; do
-          if micromamba create -n qiime2-amplicon-2025.4 \
-             -f https://raw.githubusercontent.com/qiime2/distributions/refs/heads/dev/2025.4/amplicon/released/qiime2-amplicon-ubuntu-latest-conda.yml -y; then
-            echo "QIIME 2 2025.4 environment created successfully"
-            break
-          else
-            echo "Failed to create QIIME 2 2025.4 environment. Retrying in 10 seconds..."
-            sleep 10
-            ((retry_count++))
-          fi
-        done
-        if [ $retry_count -eq $max_retries ]; then
-          echo "Failed to create QIIME 2 2025.4 environment after $max_retries attempts"
-          exit 1
-        fi
-      else
-        echo "QIIME2 2025.4 environment already exists"
-      fi
+      # Create QIIME2 2025.4 environment using mamba (faster than conda)
+      echo "Creating QIIME2 2025.4 amplicon environment with mamba..."
+      mamba env create \
+        --name qiime2-amplicon-2025.4 \
+        --file https://raw.githubusercontent.com/qiime2/distributions/refs/heads/dev/2025.4/amplicon/released/qiime2-amplicon-ubuntu-latest-conda.yml
       
-      # Activate the QIIME2 environment
-      micromamba activate qiime2-amplicon-2025.4
+      # Activate the environment
+      echo "Activating QIIME2 environment..."
+      conda activate qiime2-amplicon-2025.4
       
-      # Install Krona with error handling
-      echo "Installing Krona..."
-      max_retries=2
-      retry_count=0
-      while [ $retry_count -lt $max_retries ]; do
-        if micromamba install -c bioconda krona -y; then
-          echo "Krona installed successfully"
-          break
-        else
-          echo "Failed to install Krona. Retrying..."
-          sleep 5
-          ((retry_count++))
-        fi
-      done
+      # Install Krona using mamba (faster)
+      echo "Installing Krona with mamba..."
+      mamba install -c bioconda krona -y
       
       # Update Krona taxonomy databases
       echo "Updating Krona taxonomy databases..."
@@ -66,48 +35,50 @@ tasks:
       pip install git+https://github.com/kaanb93/q2-krona.git
       
       # Refresh QIIME2 plugin cache
+      echo "Refreshing QIIME2 plugin cache..."
       qiime dev refresh-cache
       
-      # Add auto-activation to bashrc
-      echo "micromamba activate qiime2-amplicon-2025.4" >> ~/.bashrc
-      
-      echo "Setup complete!"
-      
-    command: |
-      # Source bashrc to ensure micromamba is available
-      source ~/.bashrc
-      
-      echo "Micromamba, QIIME 2 2025.4, q2-krona, and Krona setup complete. Verifying installation..."
-      
-      # Verify micromamba installation
-      echo "=== Micromamba Info ==="
-      micromamba info
-      
-      # Verify QIIME2 installation
-      echo "=== QIIME 2 Version ==="
-      qiime --version
-      
-      # Show QIIME2 detailed info
-      echo "=== QIIME 2 Detailed Info ==="
-      qiime info
-      
-      # Verify Krona installation
-      echo "=== Krona Installation ==="
-      which ktImportText || echo "ktImportText not found in PATH"
-      
-      # Verify q2-krona plugin installation
-      echo "=== q2-krona Plugin ==="
-      qiime krona --help || echo "q2-krona plugin may not be properly installed"
-      
-      # List available QIIME2 plugins
-      echo "=== Available QIIME 2 Plugins ==="
-      qiime --help
+      # Add auto-activation to bashrc for future sessions
+      echo 'conda activate qiime2-amplicon-2025.4' >> ~/.bashrc
       
       echo ""
+      echo "✅ QIIME2 2025.4 setup complete!"
+      
+    command: |
+      # Source bashrc to ensure conda/mamba is available
+      source ~/.bashrc
+      
+      echo "🔬 QIIME2 2025.4 with Miniforge/Mamba ready!"
+      echo ""
+      
+      # Display version information
+      echo "=== 📦 Package Manager Versions ==="
+      echo "Conda: $(conda --version)"
+      echo "Mamba: $(mamba --version)"
+      echo ""
+      
+      echo "=== 🧬 QIIME2 Information ==="
+      qiime --version
+      echo ""
+      
+      echo "=== ℹ️  QIIME2 System Info ==="
+      qiime info
+      echo ""
+      
+      echo "=== 🔌 Available QIIME2 Plugins ==="
+      qiime --help | grep -A 50 "QIIME 2 help:"
+      echo ""
+      
       echo "=========================================="
-      echo "Setup complete! You can now use QIIME 2 2025.4 commands including the q2-krona plugin."
-      echo "Environment: qiime2-amplicon-2025.4"
-      echo "Package manager: micromamba"
+      echo "🎉 Setup complete! QIIME2 2025.4 is ready to use!"
+      echo "📚 Documentation: https://library.qiime2.org/quickstart/amplicon"
+      echo "💬 Forum: https://forum.qiime2.org/"
+      echo ""
+      echo "📝 Example commands to try:"
+      echo "  qiime --version"
+      echo "  qiime info"
+      echo "  qiime krona --help"
+      echo "  mamba list | grep qiime"
       echo "=========================================="
 
 vscode:
