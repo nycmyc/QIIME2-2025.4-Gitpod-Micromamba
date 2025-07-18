@@ -117,9 +117,6 @@ tasks:
       echo "Package manager: micromamba"
       echo "=========================================="
 
-# Workspace configuration for QIIME2 requirements
-workspaceClass: large
-
 vscode:
   extensions:
     - ms-python.python
