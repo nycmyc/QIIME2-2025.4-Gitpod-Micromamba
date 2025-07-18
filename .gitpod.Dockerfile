@@ -23,5 +23,5 @@ RUN curl -Ls https://micro.mamba.pm/api/micromamba/linux-64/latest | tar -xvj bi
     && sudo mv bin/micromamba /usr/local/bin/micromamba \
     && sudo chmod +x /usr/local/bin/micromamba
 
-# Initialize micromamba for gitpod user
-RUN micromamba shell init -s bash -p $MAMBA_ROOT_PREFIX
+# Initialize micromamba for gitpod user (correct syntax without -p flag)
+RUN micromamba shell init -s bash
