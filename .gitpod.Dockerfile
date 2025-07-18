@@ -8,22 +8,16 @@ RUN sudo apt-get update && sudo apt-get install -y \
     bzip2 \
     ca-certificates \
     curl \
-    tar \
-    gzip \
     && sudo apt-get clean \
     && sudo rm -rf /var/lib/apt/lists/*
 
-# Install micromamba
-RUN curl -Ls https://micro.mamba.pm/api/micromamba/linux-64/latest | tar -xvj bin/micromamba \
-    && sudo mv bin/micromamba /usr/local/bin/micromamba \
-    && sudo chmod +x /usr/local/bin/micromamba
+# Install Miniforge3 (includes conda and mamba, replaces deprecated Mambaforge)
+RUN wget https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh \
+    && bash Miniforge3-Linux-x86_64.sh -b -p $HOME/miniforge3 \
+    && rm Miniforge3-Linux-x86_64.sh
 
-# Set environment variables for micromamba
-ENV MAMBA_ROOT_PREFIX=/home/gitpod/micromamba
-ENV MAMBA_EXE=/usr/local/bin/micromamba
+# Initialize conda/mamba for bash
+RUN $HOME/miniforge3/bin/conda init bash
 
-# Create the micromamba directory and initialize
-RUN mkdir -p /home/gitpod/micromamba \
-    && micromamba shell init -s bash \
-    && echo 'export MAMBA_ROOT_PREFIX=/home/gitpod/micromamba' >> /home/gitpod/.bashrc \
-    && echo 'export MAMBA_EXE=/usr/local/bin/micromamba' >> /home/gitpod/.bashrc
+# Add miniforge to PATH
+ENV PATH="$HOME/miniforge3/bin:$PATH"
