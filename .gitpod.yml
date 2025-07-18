@@ -4,21 +4,16 @@ image:
 tasks:
   - name: Setup For BwoB Intro To Bioinformatics (Micromamba, QIIME 2 2025.4, q2-krona, and Krona)
     init: |
-      MAMBA_ROOT_PREFIX="/workspace/micromamba"
-      MAMBA_EXE="/usr/local/bin/micromamba"
+      # Set up environment variables
+      export MAMBA_ROOT_PREFIX=/home/gitpod/micromamba
+      export MAMBA_EXE=/usr/local/bin/micromamba
       
-      # Initialize micromamba if not already done
-      if [ ! -d "$MAMBA_ROOT_PREFIX" ]; then
-        echo "Initializing micromamba environment..."
-        micromamba shell init -s bash -p $MAMBA_ROOT_PREFIX
-      fi
+      # Source bashrc to get micromamba initialization
+      source ~/.bashrc
       
-      # Source the bash profile to get micromamba in PATH
-      echo 'export MAMBA_ROOT_PREFIX="/workspace/micromamba"' >> $HOME/.bashrc
-      echo 'export MAMBA_EXE="/usr/local/bin/micromamba"' >> $HOME/.bashrc
-      echo 'export PATH="$MAMBA_ROOT_PREFIX/bin:$PATH"' >> $HOME/.bashrc
-      echo '. "$MAMBA_ROOT_PREFIX/etc/profile.d/micromamba.sh"' >> $HOME/.bashrc
-      source $HOME/.bashrc
+      # Verify micromamba is working
+      echo "Testing micromamba..."
+      micromamba --version
       
       # Create QIIME2 2025.4 environment if it doesn't exist
       if [ ! -d "$MAMBA_ROOT_PREFIX/envs/qiime2-amplicon-2025.4" ]; then
@@ -40,10 +35,11 @@ tasks:
           echo "Failed to create QIIME 2 2025.4 environment after $max_retries attempts"
           exit 1
         fi
+      else
+        echo "QIIME2 2025.4 environment already exists"
       fi
       
       # Activate the QIIME2 environment
-      source $HOME/.bashrc
       micromamba activate qiime2-amplicon-2025.4
       
       # Install Krona with error handling
@@ -72,17 +68,14 @@ tasks:
       # Refresh QIIME2 plugin cache
       qiime dev refresh-cache
       
+      # Add auto-activation to bashrc
+      echo "micromamba activate qiime2-amplicon-2025.4" >> ~/.bashrc
+      
       echo "Setup complete!"
       
     command: |
       # Source bashrc to ensure micromamba is available
-      source $HOME/.bashrc
-      
-      # Activate QIIME2 environment
-      micromamba activate qiime2-amplicon-2025.4
-      
-      # Add activation command to bashrc for future sessions
-      echo 'micromamba activate qiime2-amplicon-2025.4' >> $HOME/.bashrc
+      source ~/.bashrc
       
       echo "Micromamba, QIIME 2 2025.4, q2-krona, and Krona setup complete. Verifying installation..."
       
