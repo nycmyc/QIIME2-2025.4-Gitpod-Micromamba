@@ -27,7 +27,7 @@ This repository provides a complete GitPod Classic workspace setup for QIIME2 20
 
 ### 1. Launch in GitPod
 
-[![Open in GitPod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/YOUR_USERNAME/QIIME2-2025.4-Gitpod)
+[![Open in GitPod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/nycmyc/QIIME2-2025.4-Gitpod-Micromamba)
 
 **Important:** Make sure to use a **Large** workspace class (minimum 16GB RAM) for optimal QIIME2 performance.
 
