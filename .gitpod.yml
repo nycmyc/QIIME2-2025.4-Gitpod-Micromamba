@@ -1,0 +1,128 @@
+image:
+  file: .gitpod.Dockerfile
+
+tasks:
+  - name: Setup For BwoB Intro To Bioinformatics (Micromamba, QIIME 2 2025.4, q2-krona, and Krona)
+    init: |
+      MAMBA_ROOT_PREFIX="/workspace/micromamba"
+      MAMBA_EXE="/usr/local/bin/micromamba"
+      
+      # Initialize micromamba if not already done
+      if [ ! -d "$MAMBA_ROOT_PREFIX" ]; then
+        echo "Initializing micromamba environment..."
+        micromamba shell init -s bash -p $MAMBA_ROOT_PREFIX
+      fi
+      
+      # Source the bash profile to get micromamba in PATH
+      echo 'export MAMBA_ROOT_PREFIX="/workspace/micromamba"' >> $HOME/.bashrc
+      echo 'export MAMBA_EXE="/usr/local/bin/micromamba"' >> $HOME/.bashrc
+      echo 'export PATH="$MAMBA_ROOT_PREFIX/bin:$PATH"' >> $HOME/.bashrc
+      echo '. "$MAMBA_ROOT_PREFIX/etc/profile.d/micromamba.sh"' >> $HOME/.bashrc
+      source $HOME/.bashrc
+      
+      # Create QIIME2 2025.4 environment if it doesn't exist
+      if [ ! -d "$MAMBA_ROOT_PREFIX/envs/qiime2-amplicon-2025.4" ]; then
+        echo "Creating QIIME2 2025.4 amplicon environment..."
+        max_retries=3
+        retry_count=0
+        while [ $retry_count -lt $max_retries ]; do
+          if micromamba create -n qiime2-amplicon-2025.4 \
+             -f https://raw.githubusercontent.com/qiime2/distributions/refs/heads/dev/2025.4/amplicon/released/qiime2-amplicon-ubuntu-latest-conda.yml -y; then
+            echo "QIIME 2 2025.4 environment created successfully"
+            break
+          else
+            echo "Failed to create QIIME 2 2025.4 environment. Retrying in 10 seconds..."
+            sleep 10
+            ((retry_count++))
+          fi
+        done
+        if [ $retry_count -eq $max_retries ]; then
+          echo "Failed to create QIIME 2 2025.4 environment after $max_retries attempts"
+          exit 1
+        fi
+      fi
+      
+      # Activate the QIIME2 environment
+      source $HOME/.bashrc
+      micromamba activate qiime2-amplicon-2025.4
+      
+      # Install Krona with error handling
+      echo "Installing Krona..."
+      max_retries=2
+      retry_count=0
+      while [ $retry_count -lt $max_retries ]; do
+        if micromamba install -c bioconda krona -y; then
+          echo "Krona installed successfully"
+          break
+        else
+          echo "Failed to install Krona. Retrying..."
+          sleep 5
+          ((retry_count++))
+        fi
+      done
+      
+      # Update Krona taxonomy databases
+      echo "Updating Krona taxonomy databases..."
+      ktUpdateTaxonomy.sh || echo "Warning: Krona taxonomy update may have had issues - this is often due to network timeouts and can be ignored"
+      
+      # Install q2-krona plugin
+      echo "Installing q2-krona plugin..."
+      pip install git+https://github.com/kaanb93/q2-krona.git
+      
+      # Refresh QIIME2 plugin cache
+      qiime dev refresh-cache
+      
+      echo "Setup complete!"
+      
+    command: |
+      # Source bashrc to ensure micromamba is available
+      source $HOME/.bashrc
+      
+      # Activate QIIME2 environment
+      micromamba activate qiime2-amplicon-2025.4
+      
+      # Add activation command to bashrc for future sessions
+      echo 'micromamba activate qiime2-amplicon-2025.4' >> $HOME/.bashrc
+      
+      echo "Micromamba, QIIME 2 2025.4, q2-krona, and Krona setup complete. Verifying installation..."
+      
+      # Verify micromamba installation
+      echo "=== Micromamba Info ==="
+      micromamba info
+      
+      # Verify QIIME2 installation
+      echo "=== QIIME 2 Version ==="
+      qiime --version
+      
+      # Show QIIME2 detailed info
+      echo "=== QIIME 2 Detailed Info ==="
+      qiime info
+      
+      # Verify Krona installation
+      echo "=== Krona Installation ==="
+      which ktImportText || echo "ktImportText not found in PATH"
+      
+      # Verify q2-krona plugin installation
+      echo "=== q2-krona Plugin ==="
+      qiime krona --help || echo "q2-krona plugin may not be properly installed"
+      
+      # List available QIIME2 plugins
+      echo "=== Available QIIME 2 Plugins ==="
+      qiime --help
+      
+      echo ""
+      echo "=========================================="
+      echo "Setup complete! You can now use QIIME 2 2025.4 commands including the q2-krona plugin."
+      echo "Environment: qiime2-amplicon-2025.4"
+      echo "Package manager: micromamba"
+      echo "=========================================="
+
+# Workspace configuration for QIIME2 requirements
+workspaceClass: large
+
+vscode:
+  extensions:
+    - ms-python.python
+    - ms-python.debugpy
+    - ms-toolsai.jupyter
+    - ms-python.flake8
