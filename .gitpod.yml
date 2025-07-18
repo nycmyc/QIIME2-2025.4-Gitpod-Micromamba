@@ -80,6 +80,12 @@ tasks:
       qiime --help | grep -A 50 "QIIME 2 help:"
       echo ""
       
+      # Verify Krona installation
+      echo "=== 🧬 Krona Installation ==="
+      which ktImportText || echo "ktImportText not found in PATH"
+      ktImportText 2>&1 | head -5 || echo "Krona tools may not be properly installed"
+      
+      echo ""
       echo "=========================================="
       echo "🎉 Setup complete! QIIME2 2025.4 is ready to use!"
       echo "📚 Documentation: https://library.qiime2.org/quickstart/amplicon"
@@ -88,7 +94,7 @@ tasks:
       echo "📝 Example commands to try:"
       echo "  qiime --version"
       echo "  qiime info"
-      echo "  qiime krona --help"
+      echo "  ktImportText  # Shows Krona usage"
       echo "  mamba list | grep qiime"
       echo "=========================================="
 
