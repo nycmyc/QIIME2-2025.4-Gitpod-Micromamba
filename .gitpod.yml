@@ -48,6 +48,9 @@ tasks:
       # Source bashrc to ensure conda/mamba is available
       source ~/.bashrc
       
+      # Fix PATH to prioritize conda over pyenv
+      export PATH="/home/gitpod/miniforge3/envs/qiime2-amplicon-2025.4/bin:$PATH"
+      
       echo "🔬 QIIME2 2025.4 with Miniforge/Mamba ready!"
       echo ""
       
