@@ -30,13 +30,21 @@ tasks:
       echo "Updating Krona taxonomy databases..."
       ktUpdateTaxonomy.sh || echo "Warning: Krona taxonomy update may have had issues - this is often due to network timeouts and can be ignored"
       
-      # Install q2-krona plugin
+      # Install q2-krona plugin (may not work with QIIME2 2025.4)
       echo "Installing q2-krona plugin..."
       pip install git+https://github.com/kaanb93/q2-krona.git
       
       # Refresh QIIME2 plugin cache
       echo "Refreshing QIIME2 plugin cache..."
       qiime dev refresh-cache
+      
+      # Check if q2-krona loaded successfully
+      if qiime krona --help >/dev/null 2>&1; then
+        echo "✅ q2-krona plugin loaded successfully!"
+      else
+        echo "⚠️  q2-krona plugin not loaded (compatibility issue with QIIME2 2025.4)"
+        echo "📝 Use Krona directly: ktImportText taxonomy.tsv -o plot.html"
+      fi
       
       # Add auto-activation to bashrc for future sessions
       echo 'conda activate qiime2-amplicon-2025.4' >> ~/.bashrc
